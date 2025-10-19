@@ -1,13 +1,23 @@
 
-localStorage.clear();
+(() => {
+  try {
+    // remove cookies visible to JS for the current host/path
+    document.cookie.split(';').forEach(cookie => {
+      const name = cookie.split('=')[0].trim();
+      // set the cookie with an expired date for current path (and root path)
+      document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+      document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=" + window.location.hostname;
+    });
 
-sessionStorage.clear();
+    const maxAge = 60 * 60; // seconds
+    document.cookie = `guest_mode=1; max-age=${maxAge}; path=/`;
 
-document.cookie.split(";").forEach(function(cookie) {
-    var eqPos = cookie.indexOf("=");
-    var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
-});
+    try { localStorage.clear(); } catch(e) {}
+    try { sessionStorage.clear(); } catch(e) {}
 
-take effect
-window.location.reload();
+    console.log("Cleared JS-accessible cookies, set guest_mode cookie, cleared storage. Reloading...");
+    location.reload();
+  } catch (err) {
+    console.error("Script error:", err);
+  }
+})();
